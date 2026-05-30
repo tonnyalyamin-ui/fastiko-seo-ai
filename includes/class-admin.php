@@ -38,6 +38,51 @@ class Fastiko_SEO_AI_Admin {
 			'fastiko-seo-settings',
 			[$this, 'settings_page']
 		);
+
+		add_submenu_page(
+			'fastiko-seo-ai',
+			'Scan Results',
+			'Scan Results',
+			'manage_options',
+			'fastiko-seo-results',
+			[$this, 'results_page']
+		);
+
+		add_submenu_page(
+			'fastiko-seo-ai',
+			'Recommendations',
+			'Recommendations',
+			'manage_options',
+			'fastiko-seo-recommendations',
+			[$this, 'recommendations_page']
+		);
+
+		add_submenu_page(
+			'fastiko-seo-ai',
+			'Queue',
+			'Queue',
+			'manage_options',
+			'fastiko-seo-queue',
+			[$this, 'queue_page']
+		);
+
+		add_submenu_page(
+			'fastiko-seo-ai',
+			'Reports',
+			'Reports',
+			'manage_options',
+			'fastiko-seo-reports',
+			[$this, 'reports_page']
+		);
+
+		add_submenu_page(
+    'fastiko-seo-ai',
+    'Auto Builder',
+    'Auto Builder',
+    'manage_options',
+    'fastiko-seo-auto-builder',
+    [$this, 'auto_builder_page']
+);
 	}
 
 	public function dashboard(): void {
@@ -158,4 +203,166 @@ class Fastiko_SEO_AI_Admin {
 		</div>
 <?php
 	}
+
+
+
+	public function results_page(): void {
+		global $wpdb;
+
+		$table = $wpdb->prefix . 'fastiko_seo_pages';
+
+		$rows = $wpdb->get_results(
+			"SELECT *
+         FROM {$table}
+         ORDER BY scanned_at DESC
+         LIMIT 100"
+		);
+
+		echo '<div class="wrap">';
+		echo '<h1>Scan Results</h1>';
+
+		echo '<table class="widefat">';
+
+		echo '
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Score</th>
+        <th>Scanned</th>
+    </tr>';
+
+		foreach ($rows as $row) {
+
+			echo '<tr>';
+
+			echo '<td>' . intval($row->object_id) . '</td>';
+
+			echo '<td>' . esc_html($row->title) . '</td>';
+
+			echo '<td>' . intval($row->seo_score) . '</td>';
+
+			echo '<td>' . esc_html($row->scanned_at) . '</td>';
+
+			echo '</tr>';
+		}
+
+		echo '</table>';
+
+		echo '</div>';
+	}
+
+
+	
+
+public function recommendations_page(): void
+{
+    $service = Fastiko_SEO_AI_Recommendations_Service::instance();
+
+    $items = $service->get_list(50);
+
+    echo '<div class="wrap">';
+    echo '<h1>SEO Recommendations</h1>';
+
+    echo '<table class="widefat striped">';
+    echo '<tr>
+            <th>ID</th>
+            <th>Page</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>';
+
+    foreach ($items as $item) {
+
+        $post = get_post($item['page_id']);
+
+        echo '<tr>';
+
+        echo '<td>' . esc_html($item['id']) . '</td>';
+        echo '<td>' . esc_html($post ? $post->post_title : '-') . '</td>';
+        echo '<td>' . esc_html($item['title']) . '</td>';
+        echo '<td>' . esc_html($item['status']) . '</td>';
+
+        echo '<td>';
+
+        echo '<a href="?page=fastiko-seo-recommendations&apply=' . intval($item['id']) . '">Apply</a> | ';
+        echo '<a href="?page=fastiko-seo-recommendations&ignore=' . intval($item['id']) . '">Ignore</a> | ';
+        echo '<a href="?page=fastiko-seo-recommendations&regen=' . intval($item['page_id']) . '">Regenerate</a>';
+
+        echo '</td>';
+
+        echo '</tr>';
+    }
+
+    echo '</table>';
+    echo '</div>';
+
+    // actions
+    if (isset($_GET['apply'])) {
+        $service->apply((int) $_GET['apply']);
+    }
+
+    if (isset($_GET['ignore'])) {
+        $service->ignore((int) $_GET['ignore']);
+    }
+
+    if (isset($_GET['regen'])) {
+        $service->regenerate((int) $_GET['regen']);
+    }
+}
+
+
+public function queue_page(): void
+{
+    echo '<div class="wrap">';
+    echo '<h1>Queue</h1>';
+    echo '<p>No tasks yet.</p>';
+    echo '</div>';
+}
+
+
+public function reports_page(): void
+{
+    echo '<div class="wrap">';
+    echo '<h1>Reports</h1>';
+    echo '<p>Reports module coming soon.</p>';
+    echo '</div>';
+}
+
+
+
+public function auto_builder_page(): void
+{
+    if (isset($_POST['generate_cities'])) {
+
+        $cities = explode("\n", sanitize_textarea_field($_POST['cities']));
+
+        $builder = Fastiko_SEO_AI_Auto_Page_Builder::instance();
+
+        $created = $builder->generate_bulk($cities);
+
+        echo '<div class="notice notice-success"><p>Created pages: ' . count($created) . '</p></div>';
+    }
+
+    ?>
+    <div class="wrap">
+        <h1>Auto SEO Page Builder</h1>
+
+        <form method="post">
+            <textarea name="cities" rows="10" style="width:400px"
+                placeholder="Melbourne
+Sydney
+Brisbane"></textarea>
+
+            <br><br>
+
+            <button class="button button-primary" name="generate_cities">
+                Generate Pages
+            </button>
+        </form>
+    </div>
+    <?php
+}
+
+
 }
