@@ -22,7 +22,7 @@ define('FASTIKO_SEO_AI_URL', plugin_dir_url(__FILE__));
 define('FASTIKO_SEO_AI_DB_VERSION', '1.1.0');
 
 
-require_once FASTIKO_SEO_AI_PATH . 'includes/core/class-loader.php';
+require_once FASTIKO_SEO_AI_PATH . 'class-loader.php';
 Fastiko_SEO_AI_Loader::init();
 
 
