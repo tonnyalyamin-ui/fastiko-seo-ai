@@ -19,13 +19,12 @@ define('FASTIKO_SEO_AI_VERSION', '1.0.0');
 define('FASTIKO_SEO_AI_FILE', __FILE__);
 define('FASTIKO_SEO_AI_PATH', plugin_dir_path(__FILE__));
 define('FASTIKO_SEO_AI_URL', plugin_dir_url(__FILE__));
+define('FASTIKO_SEO_AI_DB_VERSION', '1.1.0');
 
-require_once FASTIKO_SEO_AI_PATH . 'includes/class-installer.php';
-require_once FASTIKO_SEO_AI_PATH . 'includes/class-database.php';
-require_once FASTIKO_SEO_AI_PATH . 'includes/class-admin.php';
-require_once FASTIKO_SEO_AI_PATH . 'includes/class-scanner.php';
-require_once FASTIKO_SEO_AI_PATH . 'includes/class-auditor.php';
-require_once FASTIKO_SEO_AI_PATH . 'includes/class-settings.php';
+
+require_once FASTIKO_SEO_AI_PATH . 'includes/core/class-loader.php';
+Fastiko_SEO_AI_Loader::init();
+
 
 register_activation_hook(
     __FILE__,
@@ -76,6 +75,10 @@ final class Fastiko_SEO_AI {
         Fastiko_SEO_AI_Scanner::instance();
         Fastiko_SEO_AI_Auditor::instance();
 		Fastiko_SEO_AI_Settings::instance();
+		Fastiko_SEO_AI_Database::maybe_upgrade();
+		Fastiko_SEO_AI_Schema_Injector::instance();
+		Fastiko_SEO_AI_Auto_Page_Builder::instance();
+		Fastiko_SEO_AI_Content_Injector::instance();
     }
 }
 
